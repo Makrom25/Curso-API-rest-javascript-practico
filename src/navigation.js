@@ -1,6 +1,8 @@
+let page = 1;
+let infiniteScroll
+
 searchFormBtn.addEventListener('click', () => {
     location.hash = '#search=' + searchFormInput.value;
-    console.log(searchFormInput.value);
 });
 
 trendingBtn.addEventListener('click', () => {
@@ -8,14 +10,20 @@ trendingBtn.addEventListener('click', () => {
 });
 
 arrowBtn.addEventListener('click', () => {
-    location.hash = window.history.back();
+    history.back();
+    // location.hash = '#home';
 });
+
 window.addEventListener('DOMContentLoaded', navigator, false);
 window.addEventListener('hashchange', navigator, false);
-
+window.addEventListener('scroll', infiniteScroll, {passive:false});
 function navigator() {
     console.log({ location });
 
+    if(infiniteScroll) {
+        window.removeEventListener('scroll', infiniteScroll, {passive:false});
+        infiniteScroll = undefined;
+    }
     if (location.hash.startsWith('#trends')) {
         trendsPage();
     } else if (location.hash.startsWith('#search=')) {
@@ -30,6 +38,10 @@ function navigator() {
 
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
+
+    if(infiniteScroll) {
+        window.addEventListener('scroll', infiniteScroll, {passive:false})
+    }
 }
 
 function homePage() {
@@ -74,7 +86,6 @@ function categoriesPage() {
 
     headerCategoryTitle.innerHTML = categoryName;
 
-
     getMoviesByCategory(categoryId);
 }
 
@@ -94,7 +105,8 @@ function movieDetailsPage() {
     genericSection.classList.add('inactive');
     movieDetailSection.classList.remove('inactive');
 
-    const [_, movieId] = location.hash.split('=')
+    // ['#movie', '234567']
+    const [_, movieId] = location.hash.split('=');
     getMovieById(movieId);
 }
 
@@ -114,7 +126,8 @@ function searchPage() {
     genericSection.classList.remove('inactive');
     movieDetailSection.classList.add('inactive');
 
-    const [_, query] = location.hash.split('=')
+    // ['#search', 'platzi']
+    const [_, query] = location.hash.split('=');
     getMoviesBySearch(query);
 }
 
@@ -133,4 +146,10 @@ function trendsPage() {
     categoriesPreviewSection.classList.add('inactive');
     genericSection.classList.remove('inactive');
     movieDetailSection.classList.add('inactive');
+
+    headerCategoryTitle.innerHTML = 'Tendencias';
+
+    getTrendingMovies();
+
+    infiniteScroll = getPaginatedTrendingMovies;
 }
